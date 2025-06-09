@@ -2,6 +2,7 @@ import psycopg2
 
 from cliente import *
 from admin import * 
+from estabelecimento import * 
 
 def conectar():
     return psycopg2.connect(
@@ -21,9 +22,9 @@ with conn.cursor() as cur:
 def menu_principal():
     while True:
         print("---------------------------")
-        print("\nMenu Principal:")
-        print("1. Menu Cliente")
-        print("2. Área Administrativa")
+        print("1. Modo Cliente")
+        print("2. Modo Estabelecimento")
+        print("3. Área Administrativa")
         print("0. Sair")
 
         opcao = input("Escolha: ")
@@ -32,6 +33,9 @@ def menu_principal():
             menu_cliente(conn)
 
         elif opcao == '2':
+            menu_estabelecimento(conn)
+
+        elif opcao == '3':
             menu_administrativo(conn)
 
         elif opcao == '0':
