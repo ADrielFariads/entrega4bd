@@ -23,7 +23,6 @@ def menu_clientes(conn):
         print("\n--- Menu Clientes ---")
         print("1 - Buscar cliente por CPF")
         print("2 - Buscar cliente por ID")
-        print("3 - Deletar cliente por CPF")
         print("0 - Voltar")
         opcao = input("Escolha uma opção: ")
 
@@ -33,19 +32,12 @@ def menu_clientes(conn):
         elif opcao == "2":
             idcli = input("Informe o ID do cliente: ")
             buscar_cliente_por_id(conn, idcli)
-        elif opcao == "3":
-            cpf = input("Informe o CPF do cliente para deletar: ")
-            deletar_cliente_por_cpf(conn, cpf)
-        elif opcao == "0":
-            break
-        else:
-            print("Opção inválida, tente novamente.")
 
 def menu_estabelecimentos(conn):
     while True:
         print("\n--- Menu Estabelecimentos ---")
         print("1 - Buscar estabelecimento por ID")
-        print("2 - Deletar estabelecimento por ID")
+        print("2 - Buscar estabelecimento por CNPJ")
         print("0 - Voltar")
         opcao = input("Escolha uma opção: ")
 
@@ -53,12 +45,13 @@ def menu_estabelecimentos(conn):
             idest = input("Informe o ID do estabelecimento: ")
             buscar_estabelecimento_por_id(conn, idest)
         elif opcao == "2":
-            idest = input("Informe o ID do estabelecimento para deletar: ")
-            deletar_estabelecimento_por_id(conn, idest)
+            cnpj = input("Informe o CNPJ do estabelecimento: ")
+            buscar_estabelecimento_por_cnpj(conn, cnpj)
         elif opcao == "0":
             break
         else:
             print("Opção inválida, tente novamente.")
+
 
 def buscar_cliente_por_cpf(conn, cpf):
     cur = conn.cursor()
@@ -104,29 +97,15 @@ def buscar_cliente_por_id(conn, idcli):
     finally:
         cur.close()
 
-def deletar_cliente_por_cpf(conn, cpf):
-    cur = conn.cursor()
-    try:
-        cur.execute("DELETE FROM cliente WHERE cpf = %s RETURNING idcli", (cpf,))
-        result = cur.fetchone()
-        if result:
-            conn.commit()
-            print(f"Cliente com ID {result[0]} deletado com sucesso.")
-        else:
-            print("Cliente não encontrado.")
-    except Exception as e:
-        print("Erro ao deletar cliente:", e)
-        conn.rollback()
-    finally:
-        cur.close()
 
 def buscar_estabelecimento_por_id(conn, idest):
     cur = conn.cursor()
     try:
-        cur.execute("SELECT idest, nomeest FROM estabelecimento WHERE idest = %s", (idest,))
+        cur.execute("SELECT idest, nomeest, cnpj FROM estabelecimento WHERE idest = %s", (idest,))
         est = cur.fetchone()
         if est:
-            print(f"ID: {est[0]} - Nome: {est[1]}")
+            print(f"ID: {est[0]} - Nome: {est[1]} - CNPJ: {est[2]}")
+            mostrar_pedidos_estabelecimento(conn, idest)
         else:
             print("Estabelecimento não encontrado.")
     except Exception as e:
@@ -134,18 +113,59 @@ def buscar_estabelecimento_por_id(conn, idest):
     finally:
         cur.close()
 
-def deletar_estabelecimento_por_id(conn, idest):
+
+def buscar_estabelecimento_por_cnpj(conn, cnpj):
     cur = conn.cursor()
     try:
-        cur.execute("DELETE FROM estabelecimento WHERE idest = %s RETURNING idest", (idest,))
-        result = cur.fetchone()
-        if result:
-            conn.commit()
-            print(f"Estabelecimento com ID {result[0]} deletado com sucesso.")
+        cur.execute("""
+            SELECT idest, nomeest, cnpj
+            FROM estabelecimento
+            WHERE cnpj = %s
+        """, (cnpj,))
+        est = cur.fetchone()
+        if est:
+            idest, nome, cnpj = est
+            cnpj_mascarado = cnpj[:6] + '*' * (len(cnpj) - 6)
+            print(f"ID: {idest} - Nome: {nome} - CNPJ: {cnpj_mascarado}")
+            mostrar_pedidos_estabelecimento(conn, idest)
         else:
             print("Estabelecimento não encontrado.")
     except Exception as e:
-        print("Erro ao deletar estabelecimento:", e)
-        conn.rollback()
+        print("Erro ao buscar estabelecimento por CNPJ:", e)
     finally:
         cur.close()
+
+def mostrar_pedidos_estabelecimento(conn, idest):
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT p.idped, p.dataped, p.valor_total, c.nomecli
+                FROM ifood.pedido p
+                JOIN ifood.cliente c ON p.idcli = c.idcli
+                WHERE p.idest = %s
+                ORDER BY p.dataped DESC
+                LIMIT 5;
+            """, (idest,))
+            pedidos = cur.fetchall()
+            if not pedidos:
+                print("Nenhum pedido encontrado.")
+            else:
+                for pid, data, total, nomecli in pedidos:
+                    print("----------------------------------------------------------------")
+                    print(f"Pedido {pid} - {data.strftime('%d/%m %H:%M')} - Cliente: {nomecli} - Total: R$ {total:.2f}")
+                    # Buscar produtos do pedido atual
+                    cur.execute("""
+                        SELECT pr.nomeprod, pp.quantprod, pr.valorunitario
+                        FROM ifood.produtopedido pp
+                        JOIN ifood.produto pr ON pp.idprod = pr.idprod
+                        WHERE pp.idped = %s
+                    """, (pid,))
+                    produtos = cur.fetchall()
+                    if produtos:
+                        print("  Itens:")
+                        for nomeprod, quantidade, valorunitario in produtos:
+                            print(f"    {nomeprod} - Quantidade: {quantidade} - Unitário: R$ {valorunitario:.2f}")
+                    else:
+                        print("  Nenhum item encontrado para este pedido.")
+    except Exception as e:
+        print("Erro ao buscar pedidos do estabelecimento:", e)

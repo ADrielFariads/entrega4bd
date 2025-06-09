@@ -161,11 +161,19 @@ def criar_pedido(conn, idcli, idest, produtos, metodo_pagamento):
             """, (metodo_pagamento, idcli, idped))
             idpag = cur.fetchone()[0]
 
+            # escolher entregador aleatório
+            cur.execute("SELECT ident FROM ifood.entregador ORDER BY RANDOM() LIMIT 1;")
+            result = cur.fetchone()
+            if result is None:
+                print("Nenhum entregador disponível.")
+                return None
+            ident_entregador = result[0]
+
             # inserir entrega (15 minutos depois do pedido)
             cur.execute("""
-                INSERT INTO ifood.entrega (idped, horario_entrega)
-                VALUES (%s, NOW() + INTERVAL '15 minutes');
-            """, (idped,))
+                INSERT INTO ifood.entrega (idped, horario_entrega, ident)
+                VALUES (%s, NOW() + INTERVAL '15 minutes', %s);
+            """, (idped, ident_entregador))
 
             conn.commit()
 
@@ -194,12 +202,6 @@ def criar_pedido(conn, idcli, idest, produtos, metodo_pagamento):
                     print("Erro ao registrar avaliação:", e)
 
             return idped
-
-    except Exception as e:
-        conn.rollback()
-        print("Erro ao criar pedido completo:", e)
-        return None
-            
 
     except Exception as e:
         conn.rollback()
@@ -360,6 +362,7 @@ def mostrar_ultimos_pedidos(conn, idcli):
             data_formatada = ped['dataped'].strftime('%Y-%m-%d %H:%M:%S')
             print(f"Pedido {ped['idped']} - Data: {data_formatada} - Status: {ped['statusped']} - Total: R$ {ped['valor_total']:.2f}")
             print(f"Produtos: {ped['produtos']}\n")
+
 
 def buscar_cliente_por_idcli(conn, idcli):
     with conn.cursor() as cur:

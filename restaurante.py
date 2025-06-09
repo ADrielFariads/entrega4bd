@@ -89,38 +89,60 @@ def menu_estabelecimento_logado(conn, idest):
                 print("Nada para atualizar.")
 
         elif opcao == '4':
-            idprod = input("ID do produto a deletar: ").strip()
-            try:
-                with conn.cursor() as cur:
-                    cur.execute("DELETE FROM ifood.produto WHERE idprod = %s AND idest = %s", (idprod, idest))
-                    conn.commit()
-                    if cur.rowcount:
-                        print("Produto deletado.")
-                    else:
-                        print("Produto não encontrado ou não pertence a este estabelecimento.")
-            except Exception as e:
-                conn.rollback()
-                print("Erro ao deletar produto:", e)
+                idprod = input("ID do produto a deletar: ").strip()
+                try:
+                    with conn.cursor() as cur:
+                        # Deleta os registros que referenciam o produto
+                        cur.execute("DELETE FROM ifood.produtopedido WHERE idprod = %s", (idprod,))
+                        # Deleta o produto
+                        cur.execute("DELETE FROM ifood.produto WHERE idprod = %s AND idest = %s", (idprod, idest))
+                        if cur.rowcount:
+                            conn.commit()
+                            print("Produto deletado junto com suas referências.")
+                        else:
+                            conn.rollback()
+                            print("Produto não encontrado ou não pertence a este estabelecimento.")
+                except Exception as e:
+                    conn.rollback()
+                    print("Erro ao deletar produto:", e)
 
         elif opcao == '5':
-            try:
-                with conn.cursor() as cur:
-                    cur.execute("""
-                        SELECT p.idped, p.dataped, p.valor_total, c.nomecli
-                        FROM ifood.pedido p
-                        JOIN ifood.cliente c ON p.idcli = c.idcli
-                        WHERE p.idest = %s
-                        ORDER BY p.dataped DESC
-                        LIMIT 5;
-                    """, (idest,))
-                    pedidos = cur.fetchall()
-                    if not pedidos:
-                        print("Nenhum pedido encontrado.")
-                    else:
-                        for pid, data, total, nomecli in pedidos:
-                            print(f"Pedido {pid} - {data.strftime('%d/%m %H:%M')} - Cliente: {nomecli} - Total: R$ {total:.2f}")
-            except Exception as e:
-                print("Erro ao buscar pedidos:", e)
+                try:
+                    with conn.cursor() as cur:
+                        cur.execute("""
+                            SELECT p.idped, p.dataped, p.valor_total, c.nomecli
+                            FROM ifood.pedido p
+                            JOIN ifood.cliente c ON p.idcli = c.idcli
+                            WHERE p.idest = %s
+                            ORDER BY p.dataped DESC
+                            LIMIT 5;
+                        """, (idest,))
+                        pedidos = cur.fetchall()
+                        if not pedidos:
+                            print("Nenhum pedido encontrado.")
+                        else:
+                            for pid, data, total, nomecli in pedidos:
+                                print("----------------------------------------------------------------")
+                                print(f"Pedido {pid} - {data.strftime('%d/%m %H:%M')} - Cliente: {nomecli} - Total: R$ {total:.2f}")
+                                # Buscar produtos do pedido atual
+                                cur.execute("""
+                                    SELECT pr.nomeprod, pp.quantprod, pr.valorunitario
+                                    FROM ifood.produtopedido pp
+                                    JOIN ifood.produto pr ON pp.idprod = pr.idprod
+                                    WHERE pp.idped = %s
+                                """, (pid,))
+                                produtos = cur.fetchall()
+                                if produtos:
+                                    
+                                    print("  Itens:")
+                                    for nomeprod, quantidade, valorunitario in produtos:
+                                        print(f"    {nomeprod} - Quantidade: {quantidade} - Unitário: R$ {valorunitario:.2f}")
+                                        
+                                else:
+                                    print("  Nenhum item encontrado para este pedido.")
+                except Exception as e:
+                    print("Erro ao buscar pedidos:", e)
+
 
         elif opcao == '0':
             print("Saindo do menu do restaurante.")
