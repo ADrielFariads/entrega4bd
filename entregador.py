@@ -1,11 +1,11 @@
 import psycopg2
-
 def menu_entregador(conn):
     while True:
         print("\n--- MENU ENTREGADOR ---")
         print("1 - Cadastrar entregador")
         print("2 - Buscar entregador por CPF")
         print("3 - Deletar entregador por CPF")
+        print("4 - Ver últimas entregas do entregador")
         print("0 - Voltar")
         print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
@@ -16,6 +16,8 @@ def menu_entregador(conn):
             buscar_entregador_por_cpf(conn)
         elif opcao == '3':
             deletar_entregador_por_cpf(conn)
+        elif opcao == '4':
+            ver_ultimas_entregas(conn)
         elif opcao == '0':
             break
         elif opcao == 'q':
@@ -108,10 +110,48 @@ def menu_retorno():
         print("\n0 - Voltar")
         print("q - Sair do sistema")
         escolha = input("Escolha: ").strip()
-        if escolha == '1':
+        if escolha == '0':
             break
         elif escolha == 'q':
             print("Encerrando o sistema.")
             exit()
         else:
             print("Opção inválida. Tente novamente.")
+
+
+def ver_ultimas_entregas(conn):
+    cpf = input("Digite o CPF do entregador: ").strip()
+    try:
+        with conn.cursor() as cur:
+            # Verifica se o entregador existe e recupera seu ID
+            cur.execute("SELECT ident, nomeent FROM entregador WHERE cpf_entregador = %s", (cpf,))
+            entregador = cur.fetchone()
+
+            if not entregador:
+                print("⚠️ Entregador não encontrado.")
+                return
+
+            ident = entregador[0]
+            nome = entregador[1]
+
+            # Busca as últimas 5 entregas do entregador
+            cur.execute("""
+                SELECT idped, horario_entrega
+                FROM entrega
+                WHERE ident = %s
+                ORDER BY horario_entrega DESC
+                LIMIT 5
+            """, (ident,))
+            entregas = cur.fetchall()
+
+            print(f"\n--- Últimas entregas de {nome} ---")
+            if entregas:
+                for entrega in entregas:
+                    print(f"\nID do Pedido: {entrega[0]}")
+                    print(f"Horário da Entrega: {entrega[1]}")
+            else:
+                print("Nenhuma entrega registrada para este entregador.")
+    except Exception as e:
+        print(f"❌ Erro ao buscar entregas: {e}")
+
+    menu_retorno()

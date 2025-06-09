@@ -21,6 +21,7 @@ with conn.cursor() as cur:
 
 def menu_principal():
     while True:
+        print("Menu Principal")
         print("---------------------------")
         print("1. Modo Cliente")
         print("2. Modo Estabelecimento")
