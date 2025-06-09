@@ -25,7 +25,7 @@ def menu_principal():
         print("1. Modo Cliente")
         print("2. Modo Estabelecimento")
         print("3. Área Administrativa")
-        print("0. Sair")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ")
 
@@ -38,7 +38,7 @@ def menu_principal():
         elif opcao == '3':
             menu_administrativo(conn)
 
-        elif opcao == '0':
+        elif opcao == 'q':
             print("Saindo...")
             break
         else:

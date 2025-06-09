@@ -1,13 +1,15 @@
 from cliente import mostrar_ultimos_pedidos
 from entregador import menu_entregador
+import sys
 
 def menu_administrativo(conn):
     while True:
         print("\n--- Área Administrativa ---")
         print("1 - Menu Clientes")
         print("2 - Menu Estabelecimentos")
-        print("3 - Menu Entegador")
-        print("0 - Sair")
+        print("3 - Menu Entregador")
+        print("0 - Voltar")
+        print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
@@ -17,8 +19,11 @@ def menu_administrativo(conn):
         elif opcao == '3':
             menu_entregador(conn)
         elif opcao == "0":
-            print("Saindo da área administrativa.")
+            print("Voltando ao menu principal...")
             break
+        elif opcao == "q":
+            print("Encerrando o sistema...")
+            sys.exit(0)
         else:
             print("Opção inválida, tente novamente.")
 
@@ -29,6 +34,7 @@ def menu_clientes(conn):
         print("2 - Buscar cliente por ID")
         print("3 - Deletar cliente por CPF")
         print("0 - Voltar")
+        print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
@@ -42,8 +48,15 @@ def menu_clientes(conn):
             deletar_cliente_por_cpf(conn, cpf)
         elif opcao == "0":
             break
+        elif opcao == "q":
+            print("Encerrando o sistema...")
+            sys.exit(0)
         else:
             print("Opção inválida, tente novamente.")
+            continue
+
+        if not menu_voltar_ou_sair():
+            sys.exit(0)
 
 def menu_estabelecimentos(conn):
     while True:
@@ -51,6 +64,7 @@ def menu_estabelecimentos(conn):
         print("1 - Buscar estabelecimento por ID")
         print("2 - Deletar estabelecimento por ID")
         print("0 - Voltar")
+        print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
@@ -61,8 +75,29 @@ def menu_estabelecimentos(conn):
             deletar_estabelecimento_por_id(conn, idest)
         elif opcao == "0":
             break
+        elif opcao == "q":
+            print("Encerrando o sistema...")
+            sys.exit(0)
         else:
             print("Opção inválida, tente novamente.")
+            continue
+
+        if not menu_voltar_ou_sair():
+            sys.exit(0)
+
+# Função comum para escolha após ação
+def menu_voltar_ou_sair():
+    while True:
+        print("\n0 - Voltar")
+        print("q - Sair do sistema")
+        escolha = input("Escolha: ").strip()
+        if escolha == "0":
+            return True
+        elif escolha == "q":
+            print("Encerrando o sistema...")
+            return False
+        else:
+            print("Opção inválida.")
 
 def buscar_cliente_por_cpf(conn, cpf):
     cur = conn.cursor()

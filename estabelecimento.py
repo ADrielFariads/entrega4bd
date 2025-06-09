@@ -5,6 +5,7 @@ def menu_estabelecimento(conn):
         print("\nMenu Estabelecimento:")
         print("1. Logar com CNPJ")
         print("0. Voltar")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ").strip()
         if opcao == '1':
@@ -19,7 +20,11 @@ def menu_estabelecimento(conn):
                 else:
                     print("Estabelecimento não encontrado com esse CNPJ.")
         elif opcao == '0':
+            print("Voltando ao menu anterior.")
             break
+        elif opcao.lower() == 'q':
+            print("Encerrando sistema.")
+            exit(0)
         else:
             print("Opção inválida.")
 
@@ -32,7 +37,8 @@ def menu_estabelecimento_logado(conn, idest):
         print("3. Atualizar produto")
         print("4. Deletar produto")
         print("5. Ver últimos pedidos recebidos")
-        print("0. Sair")
+        print("0. Voltar")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ").strip()
 
@@ -75,8 +81,8 @@ def menu_estabelecimento_logado(conn, idest):
 
             if campos:
                 valores.append(idprod)
-                query = f"UPDATE ifood.produto SET {', '.join(campos)} WHERE idprod = %s AND idest = %s"
                 valores.append(idest)
+                query = f"UPDATE ifood.produto SET {', '.join(campos)} WHERE idprod = %s AND idest = %s"
                 try:
                     with conn.cursor() as cur:
                         cur.execute(query, tuple(valores))
@@ -123,21 +129,10 @@ def menu_estabelecimento_logado(conn, idest):
                 print("Erro ao buscar pedidos:", e)
 
         elif opcao == '0':
-            print("Saindo do menu do restaurante.")
+            print("Voltando ao menu anterior.")
             break
+        elif opcao.lower() == 'q':
+            print("Encerrando sistema.")
+            exit(0)
         else:
             print("Opção inválida.")
-            continue
-
-        # 👇 Novo comportamento após qualquer operação:
-        while True:
-            print("\n1. Voltar ao menu anterior")
-            print("0. Sair do sistema")
-            escolha = input("Escolha: ").strip()
-            if escolha == '1':
-                break  # volta para o menu restaurante logado
-            elif escolha == '0':
-                print("Encerrando programa.")
-                exit(0)
-            else:
-                print("Opção inválida.")

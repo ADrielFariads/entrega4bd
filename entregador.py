@@ -7,6 +7,7 @@ def menu_entregador(conn):
         print("2 - Buscar entregador por CPF")
         print("3 - Deletar entregador por CPF")
         print("0 - Voltar")
+        print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
 
         if opcao == '1':
@@ -17,6 +18,9 @@ def menu_entregador(conn):
             deletar_entregador_por_cpf(conn)
         elif opcao == '0':
             break
+        elif opcao == 'q':
+            print("Encerrando o sistema.")
+            exit()
         else:
             print("Opção inválida. Tente novamente.")
 
@@ -51,7 +55,6 @@ def cadastrar_entregador(conn):
 
     menu_retorno()
 
-
 def buscar_entregador_por_cpf(conn):
     cpf = input("Digite o CPF do entregador: ").strip()
     try:
@@ -78,7 +81,6 @@ def buscar_entregador_por_cpf(conn):
 
     menu_retorno()
 
-
 def deletar_entregador_por_cpf(conn):
     cpf = input("Digite o CPF do entregador a ser deletado: ").strip()
     try:
@@ -101,15 +103,14 @@ def deletar_entregador_por_cpf(conn):
 
     menu_retorno()
 
-
 def menu_retorno():
     while True:
-        print("\n1 - Voltar ao menu de entregador")
-        print("0 - Sair do sistema")
+        print("\n0 - Voltar")
+        print("q - Sair do sistema")
         escolha = input("Escolha: ").strip()
         if escolha == '1':
-            break  # volta ao menu_entregador
-        elif escolha == '0':
+            break
+        elif escolha == 'q':
             print("Encerrando o sistema.")
             exit()
         else:

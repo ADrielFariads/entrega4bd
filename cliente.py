@@ -220,6 +220,8 @@ def adicionar_produtos_ao_pedido(conn, idped, produtos):  # produtos = [(idprod,
             conn.rollback()
             print("Erro ao adicionar produtos:", e)
 
+from datetime import date
+
 def mostrar_restaurantes_proximos(conn, idcli):
     with conn.cursor() as cur:
         cur.execute("SELECT endereco FROM ifood.cliente WHERE idcli = %s", (idcli,))
@@ -256,7 +258,6 @@ def mostrar_restaurantes_proximos(conn, idcli):
 
 def mostrar_cupons(conn, idcli):
     with conn.cursor() as cur:
-        # Busca cupons com validade hoje ou maior (ativos)
         cur.execute("""
             SELECT idcup, tipo_cupom, valor_cupom, validade
             FROM ifood.cupom
@@ -309,7 +310,6 @@ def fazer_pedido(conn, idcli, idest, produtos_disponiveis):
     else:
         print("Falha ao criar pedido.")
 
-
 def criar_pagamento(conn, idcli, idped, metodo):
     with conn.cursor() as cur:
         try:
@@ -348,7 +348,6 @@ def ultimos_pedidos(conn, id_cliente, limite=5):
     
     return [dict(zip(colnames, row)) for row in rows]
 
-
 def mostrar_ultimos_pedidos(conn, idcli):
     pedidos = ultimos_pedidos(conn, idcli)
     if not pedidos:
@@ -380,7 +379,6 @@ def buscar_cliente_por_idcli(conn, idcli):
                 "telefone": row[5] if len(row) > 5 else None
             }
         return None
-
 
 def alterar_dados_cliente(conn, idcli):
     cliente = buscar_cliente_por_idcli(conn, idcli)
@@ -428,7 +426,8 @@ def menu_cliente(conn):
         print("\nMenu Cliente:")
         print("1. Logar")
         print("2. Criar conta")
-        print("0. Voltar para o menu principal")
+        print("0. Voltar")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ")
 
@@ -455,6 +454,9 @@ def menu_cliente(conn):
                 print("Falha ao criar conta.")
         elif opcao == '0':
             break
+        elif opcao == 'q':
+            print("Saindo do sistema...")
+            exit()
         else:
             print("Opção inválida. Tente novamente.")
 
@@ -466,6 +468,7 @@ def menu_cliente_logado(conn, idcli):
         print("3. Mostrar restaurantes próximos")
         print("4. Alterar dados cadastrais")
         print("0. Logout")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ")
 
@@ -480,6 +483,12 @@ def menu_cliente_logado(conn, idcli):
         elif opcao == '0':
             print("Logout realizado.")
             break
+        elif opcao == 'q':
+            print("Saindo do sistema...")
+            exit()
         else:
             print("Opção inválida. Tente novamente.")
+
+        
+
             
