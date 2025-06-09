@@ -1,6 +1,14 @@
 from datetime import datetime, date
 
 def criar_cliente(conn, nomecli, clube, cpf, endereco):
+    if not cpf.isdigit() or len(cpf) != 11:
+        print("CPF inválido. Deve conter exatamente 11 dígitos numéricos.")
+        return None
+    
+    if endereco[-2:] not in ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]:
+        print("Certifique-se de que as duas últimas letras do seu endereço sejam a sigla do seu estado.")
+        return None
+
     with conn.cursor() as cur:
         try:
             cur.execute("""
