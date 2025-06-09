@@ -1,10 +1,12 @@
 from cliente import mostrar_ultimos_pedidos
+from entregador import menu_entregador
 
 def menu_administrativo(conn):
     while True:
         print("\n--- Área Administrativa ---")
         print("1 - Menu Clientes")
         print("2 - Menu Estabelecimentos")
+        print("3 - Menu Entegador")
         print("0 - Sair")
         opcao = input("Escolha uma opção: ")
 
@@ -12,6 +14,8 @@ def menu_administrativo(conn):
             menu_clientes(conn)
         elif opcao == "2":
             menu_estabelecimentos(conn)
+        elif opcao == '3':
+            menu_entregador(conn)
         elif opcao == "0":
             print("Saindo da área administrativa.")
             break
