@@ -1,20 +1,29 @@
 from cliente import mostrar_ultimos_pedidos
+from entregador import menu_entregador
+import sys
 
 def menu_administrativo(conn):
     while True:
         print("\n--- Área Administrativa ---")
         print("1 - Menu Clientes")
         print("2 - Menu Estabelecimentos")
-        print("0 - Sair")
+        print("3 - Menu Entregador")
+        print("0 - Voltar")
+        print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
             menu_clientes(conn)
         elif opcao == "2":
             menu_estabelecimentos(conn)
+        elif opcao == '3':
+            menu_entregador(conn)
         elif opcao == "0":
-            print("Saindo da área administrativa.")
+            print("Voltando ao menu principal...")
             break
+        elif opcao == "q":
+            print("Encerrando o sistema...")
+            sys.exit(0)
         else:
             print("Opção inválida, tente novamente.")
 
@@ -23,7 +32,9 @@ def menu_clientes(conn):
         print("\n--- Menu Clientes ---")
         print("1 - Buscar cliente por CPF")
         print("2 - Buscar cliente por ID")
+        print("3 - Deletar cliente por CPF")
         print("0 - Voltar")
+        print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
@@ -32,13 +43,32 @@ def menu_clientes(conn):
         elif opcao == "2":
             idcli = input("Informe o ID do cliente: ")
             buscar_cliente_por_id(conn, idcli)
+        elif opcao == "3":
+            cpf = input("Informe o CPF do cliente para deletar: ")
+            deletar_cliente_por_cpf(conn, cpf)
+        elif opcao == "0":
+            break
+        elif opcao == "q":
+            print("Encerrando o sistema...")
+            sys.exit(0)
+        else:
+            print("Opção inválida, tente novamente.")
+            continue
+
+        if not menu_voltar_ou_sair():
+            sys.exit(0)
 
 def menu_estabelecimentos(conn):
     while True:
         print("\n--- Menu Estabelecimentos ---")
         print("1 - Buscar estabelecimento por ID")
+
         print("2 - Buscar estabelecimento por CNPJ")
+
         print("0 - Voltar")
+        print("q - Sair do sistema")
+
+
         opcao = input("Escolha uma opção: ")
 
         if opcao == "1":
@@ -47,11 +77,32 @@ def menu_estabelecimentos(conn):
         elif opcao == "2":
             cnpj = input("Informe o CNPJ do estabelecimento: ")
             buscar_estabelecimento_por_cnpj(conn, cnpj)
+
         elif opcao == "0":
             break
+        elif opcao == "q":
+            print("Encerrando o sistema...")
+            sys.exit(0)
         else:
             print("Opção inválida, tente novamente.")
+            continue
 
+        if not menu_voltar_ou_sair():
+            sys.exit(0)
+
+# Função comum para escolha após ação
+def menu_voltar_ou_sair():
+    while True:
+        print("\n0 - Voltar")
+        print("q - Sair do sistema")
+        escolha = input("Escolha: ").strip()
+        if escolha == "0":
+            return True
+        elif escolha == "q":
+            print("Encerrando o sistema...")
+            return False
+        else:
+            print("Opção inválida.")
 
 def buscar_cliente_por_cpf(conn, cpf):
     cur = conn.cursor()

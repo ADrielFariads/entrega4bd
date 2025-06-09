@@ -1,6 +1,14 @@
 from datetime import datetime, date
 
 def criar_cliente(conn, nomecli, clube, cpf, endereco):
+    if not cpf.isdigit() or len(cpf) != 11:
+        print("CPF inválido. Deve conter exatamente 11 dígitos numéricos.")
+        return None
+    
+    if endereco[-2:] not in ["AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]:
+        print("Certifique-se de que as duas últimas letras do seu endereço sejam a sigla do seu estado.")
+        return None
+
     with conn.cursor() as cur:
         try:
             cur.execute("""
@@ -222,6 +230,7 @@ def adicionar_produtos_ao_pedido(conn, idped, produtos):  # produtos = [(idprod,
             conn.rollback()
             print("Erro ao adicionar produtos:", e)
 
+
 def mostrar_restaurantes_proximos(conn, idcli):
     with conn.cursor() as cur:
         cur.execute("SELECT endereco FROM ifood.cliente WHERE idcli = %s", (idcli,))
@@ -431,7 +440,8 @@ def menu_cliente(conn):
         print("\nMenu Cliente:")
         print("1. Logar")
         print("2. Criar conta")
-        print("0. Voltar para o menu principal")
+        print("0. Voltar")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ")
 
@@ -458,6 +468,9 @@ def menu_cliente(conn):
                 print("Falha ao criar conta.")
         elif opcao == '0':
             break
+        elif opcao == 'q':
+            print("Saindo do sistema...")
+            exit()
         else:
             print("Opção inválida. Tente novamente.")
 
@@ -469,6 +482,7 @@ def menu_cliente_logado(conn, idcli):
         print("3. Mostrar restaurantes próximos")
         print("4. Alterar dados cadastrais")
         print("0. Logout")
+        print("q. Sair do sistema")
 
         opcao = input("Escolha: ")
 
@@ -483,5 +497,12 @@ def menu_cliente_logado(conn, idcli):
         elif opcao == '0':
             print("Logout realizado.")
             break
+        elif opcao == 'q':
+            print("Saindo do sistema...")
+            exit()
         else:
             print("Opção inválida. Tente novamente.")
+
+        
+
+            

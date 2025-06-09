@@ -3,6 +3,7 @@ import psycopg2
 from cliente import *
 from admin import * 
 from restaurante import * 
+from estabelecimento import * 
 
 def conectar():
     return psycopg2.connect(
@@ -39,7 +40,7 @@ def menu_principal():
         elif opcao == '3':
             menu_administrativo(conn)
 
-        elif opcao == '0':
+        elif opcao == 'q':
             print("Saindo...")
             break
         else:
