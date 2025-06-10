@@ -472,7 +472,7 @@ def menu_cliente(conn):
             print("Saindo do sistema...")
             exit()
         else:
-            print("Opção inválida. Tente novamente.")
+            print("\nOpção inválida!!! Tente novamente.")
 
 def menu_cliente_logado(conn, idcli):
     while True:
@@ -501,8 +501,17 @@ def menu_cliente_logado(conn, idcli):
             print("Saindo do sistema...")
             exit()
         else:
-            print("Opção inválida. Tente novamente.")
+            print("\nOpção inválida!!! Tente novamente.")
+            continue  # volta ao início do menu se inválido
 
-        
-
-            
+        # Após qualquer ação válida (de 1 a 4), perguntar:
+        while True:
+            proxima_acao = input("\nSelecione o que deseja realizar: \n " \
+            "-------------------- \n0 - voltar ao menu \nq - sair do sistema ").strip().lower()
+            if proxima_acao == '0':
+                break  # volta para o menu
+            elif proxima_acao == 'q':
+                print("Saindo do sistema...")
+                exit()
+            else:
+                print("Entrada inválida. Digite 0 ou q.")

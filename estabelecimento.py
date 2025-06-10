@@ -7,7 +7,7 @@ def menu_estabelecimento(conn):
         print("0. Voltar")
         print("q. Sair do sistema")
 
-        opcao = input("Escolha: ").strip()
+        opcao = input("Escolha: ").strip().lower()
         if opcao == '1':
             cnpj = input("CNPJ do estabelecimento: ").strip()
             with conn.cursor() as cur:
@@ -22,7 +22,7 @@ def menu_estabelecimento(conn):
         elif opcao == '0':
             print("Voltando ao menu anterior.")
             break
-        elif opcao.lower() == 'q':
+        elif opcao == 'q':
             print("Encerrando sistema.")
             exit(0)
         else:
@@ -40,7 +40,7 @@ def menu_estabelecimento_logado(conn, idest):
         print("0. Voltar")
         print("q. Sair do sistema")
 
-        opcao = input("Escolha: ").strip()
+        opcao = input("Escolha: ").strip().lower()
 
         if opcao == '1':
             produtos = buscar_produtos_por_restaurante(conn, idest)
@@ -50,6 +50,7 @@ def menu_estabelecimento_logado(conn, idest):
                 print("\nProdutos:")
                 for idprod, nome, valor in produtos:
                     print(f"{idprod} - {nome} - R$ {valor:.2f}")
+            aguardar_acao_usuario()
 
         elif opcao == '2':
             nome = input("Nome do produto: ").strip()
@@ -65,6 +66,7 @@ def menu_estabelecimento_logado(conn, idest):
             except Exception as e:
                 conn.rollback()
                 print("Erro ao adicionar produto:", e)
+            aguardar_acao_usuario()
 
         elif opcao == '3':
             idprod = input("ID do produto a atualizar: ").strip()
@@ -93,20 +95,24 @@ def menu_estabelecimento_logado(conn, idest):
                     print("Erro ao atualizar:", e)
             else:
                 print("Nada para atualizar.")
+            aguardar_acao_usuario()
 
         elif opcao == '4':
             idprod = input("ID do produto a deletar: ").strip()
             try:
                 with conn.cursor() as cur:
+                    cur.execute("DELETE FROM ifood.produtopedido WHERE idprod = %s", (idprod,))
                     cur.execute("DELETE FROM ifood.produto WHERE idprod = %s AND idest = %s", (idprod, idest))
-                    conn.commit()
                     if cur.rowcount:
-                        print("Produto deletado.")
+                        conn.commit()
+                        print("Produto deletado junto com suas referências.")
                     else:
+                        conn.rollback()
                         print("Produto não encontrado ou não pertence a este estabelecimento.")
             except Exception as e:
                 conn.rollback()
                 print("Erro ao deletar produto:", e)
+            aguardar_acao_usuario()
 
         elif opcao == '5':
             try:
@@ -124,14 +130,43 @@ def menu_estabelecimento_logado(conn, idest):
                         print("Nenhum pedido encontrado.")
                     else:
                         for pid, data, total, nomecli in pedidos:
+                            print("----------------------------------------------------------------")
                             print(f"Pedido {pid} - {data.strftime('%d/%m %H:%M')} - Cliente: {nomecli} - Total: R$ {total:.2f}")
+                            cur.execute("""
+                                SELECT pr.nomeprod, pp.quantprod, pr.valorunitario
+                                FROM ifood.produtopedido pp
+                                JOIN ifood.produto pr ON pp.idprod = pr.idprod
+                                WHERE pp.idped = %s
+                            """, (pid,))
+                            itens = cur.fetchall()
+                            if itens:
+                                print("  Itens:")
+                                for nomeprod, qtd, valorunit in itens:
+                                    print(f"    {nomeprod} - Quantidade: {qtd} - Unitário: R$ {valorunit:.2f}")
+                            else:
+                                print("  Nenhum item encontrado para este pedido.")
             except Exception as e:
                 print("Erro ao buscar pedidos:", e)
+            aguardar_acao_usuario()
 
         elif opcao == '0':
-            print("Voltando ao menu anterior.")
+            print("Voltando ao menu do estabelecimento.")
             break
-        elif opcao.lower() == 'q':
+        elif opcao == 'q':
+            print("Encerrando sistema.")
+            exit(0)
+        else:
+            print("Opção inválida.")
+
+
+def aguardar_acao_usuario():
+    while True:
+        print("\n0. Voltar")
+        print("q. Sair do sistema")
+        acao = input("Escolha: ").strip().lower()
+        if acao == '0':
+            break
+        elif acao == 'q':
             print("Encerrando sistema.")
             exit(0)
         else:

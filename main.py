@@ -1,8 +1,7 @@
 import psycopg2
 
 from cliente import *
-from admin import * 
-from restaurante import * 
+from admin import *  
 from estabelecimento import * 
 
 def conectar():
