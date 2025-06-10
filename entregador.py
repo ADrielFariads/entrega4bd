@@ -5,7 +5,6 @@ def menu_entregador(conn):
         print("\n--- MENU ENTREGADOR ---")
         print("1 - Cadastrar entregador")
         print("2 - Buscar entregador por CPF")
-        print("3 - Deletar entregador por CPF")
         print("0 - Voltar")
         print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
@@ -14,8 +13,7 @@ def menu_entregador(conn):
             cadastrar_entregador(conn)
         elif opcao == '2':
             buscar_entregador_por_cpf(conn)
-        elif opcao == '3':
-            deletar_entregador_por_cpf(conn)
+
         elif opcao == '0':
             break
         elif opcao == 'q':
@@ -81,27 +79,27 @@ def buscar_entregador_por_cpf(conn):
 
     menu_retorno()
 
-def deletar_entregador_por_cpf(conn):
-    cpf = input("Digite o CPF do entregador a ser deletado: ").strip()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT * FROM entregador WHERE cpf_entregador = %s", (cpf,))
-            if cur.fetchone() is None:
-                print("⚠️ Entregador não encontrado.")
-                return
+# def deletar_entregador_por_cpf(conn):
+#     cpf = input("Digite o CPF do entregador a ser deletado: ").strip()
+#     try:
+#         with conn.cursor() as cur:
+#             cur.execute("SELECT * FROM entregador WHERE cpf_entregador = %s", (cpf,))
+#             if cur.fetchone() is None:
+#                 print("⚠️ Entregador não encontrado.")
+#                 return
 
-            confirmacao = input("Tem certeza que deseja excluir este entregador? (s/n): ").strip().lower()
-            if confirmacao == 's':
-                cur.execute("DELETE FROM entregador WHERE cpf_entregador = %s", (cpf,))
-                conn.commit()
-                print("✅ Entregador excluído com sucesso.")
-            else:
-                print("❌ Operação cancelada.")
-    except Exception as e:
-        print(f"❌ Erro ao excluir entregador: {e}")
-        conn.rollback()
+#             confirmacao = input("Tem certeza que deseja excluir este entregador? (s/n): ").strip().lower()
+#             if confirmacao == 's':
+#                 cur.execute("DELETE FROM entregador WHERE cpf_entregador = %s", (cpf,))
+#                 conn.commit()
+#                 print("✅ Entregador excluído com sucesso.")
+#             else:
+#                 print("❌ Operação cancelada.")
+#     except Exception as e:
+#         print(f"❌ Erro ao excluir entregador: {e}")
+#         conn.rollback()
 
-    menu_retorno()
+#     menu_retorno()
 
 def menu_retorno():
     while True:

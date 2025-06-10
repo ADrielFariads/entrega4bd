@@ -27,7 +27,7 @@ def menu_principal():
         print("1. Modo Cliente")
         print("2. Modo Estabelecimento")
         print("3. Área Administrativa")
-        print("0. Sair")
+        print("q. Sair")
 
         opcao = input("Escolha: ")
 

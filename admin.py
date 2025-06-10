@@ -8,6 +8,7 @@ def menu_administrativo(conn):
         print("1 - Menu Clientes")
         print("2 - Menu Estabelecimentos")
         print("3 - Menu Entregador")
+        print("4 - Analisando Índices")
         print("0 - Voltar")
         print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
@@ -18,6 +19,9 @@ def menu_administrativo(conn):
             menu_estabelecimentos(conn)
         elif opcao == '3':
             menu_entregador(conn)
+        elif opcao == "4":
+            analisar_indices(conn)
+        
         elif opcao == "0":
             print("Voltando ao menu principal...")
             break
@@ -32,7 +36,6 @@ def menu_clientes(conn):
         print("\n--- Menu Clientes ---")
         print("1 - Buscar cliente por CPF")
         print("2 - Buscar cliente por ID")
-        print("3 - Deletar cliente por CPF")
         print("0 - Voltar")
         print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
@@ -43,9 +46,6 @@ def menu_clientes(conn):
         elif opcao == "2":
             idcli = input("Informe o ID do cliente: ")
             buscar_cliente_por_id(conn, idcli)
-        elif opcao == "3":
-            cpf = input("Informe o CPF do cliente para deletar: ")
-            deletar_cliente_por_cpf(conn, cpf)
         elif opcao == "0":
             break
         elif opcao == "q":
@@ -220,3 +220,62 @@ def mostrar_pedidos_estabelecimento(conn, idest):
                         print("  Nenhum item encontrado para este pedido.")
     except Exception as e:
         print("Erro ao buscar pedidos do estabelecimento:", e)
+
+def criar_indices_otimizacao(conn):
+    try:
+        with conn.cursor() as cur:
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_cliente_cpf ON cliente (cpf);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_estabelecimento_cnpj ON estabelecimento (cnpj);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_pedido_idcli ON pedido (idcli);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_pedido_idest ON pedido (idest);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_produtopedido_idprod ON produtopedido (idprod);")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_produtopedido_idped ON produtopedido (idped);")
+            conn.commit()
+            print("Índices criados com sucesso.")
+    except Exception as e:
+        print("Erro ao criar índices:", e)
+
+def analisar_indices(conn):
+    consultas = [
+        {
+            "descricao": "Buscar cliente por CPF",
+            "query": "SELECT idcli, nomecli, telefone, cpf FROM ifood.cliente WHERE cpf = %s",
+            "params": ('12345678900',),
+        },
+        {
+            "descricao": "Buscar pedidos de um cliente por data",
+            "query": "SELECT idped, dataped, valor_total FROM ifood.pedido WHERE idcli = %s ORDER BY dataped DESC LIMIT 5",
+            "params": ('CLI1234',),
+        },
+        {
+            "descricao": "Buscar pedidos de um estabelecimento por data",
+            "query": "SELECT idped, dataped, valor_total FROM ifood.pedido WHERE idest = %s ORDER BY dataped DESC LIMIT 5",
+            "params": ('EST1234',),
+        },
+        {
+            "descricao": "Buscar estabelecimento por CNPJ",
+            "query": "SELECT idest, nomeest, cnpj FROM ifood.estabelecimento WHERE cnpj = %s",
+            "params": ('12345678000199',),
+        }
+    ]
+
+    with conn.cursor() as cur:
+        print("\n=== Análise comparativa com e sem índice ===\n")
+        for c in consultas:
+            print(f">> {c['descricao']}")
+
+            # Desativa o uso de índice
+            cur.execute("SET enable_indexscan = off;")
+            cur.execute("EXPLAIN ANALYZE " + c['query'], c['params'])
+            resultado_sem_indice = cur.fetchall()
+            tempo_sem_indice = next((linha[0] for linha in resultado_sem_indice if "Execution Time" in linha[0]), "Tempo não encontrado")
+            print(f"Tempo SEM índice: {tempo_sem_indice}")
+
+            # Ativa o uso de índice
+            cur.execute("SET enable_indexscan = on;")
+            cur.execute("EXPLAIN ANALYZE " + c['query'], c['params'])
+            resultado_com_indice = cur.fetchall()
+            tempo_com_indice = next((linha[0] for linha in resultado_com_indice if "Execution Time" in linha[0]), "Tempo não encontrado")
+            print(f"Tempo COM índice: {tempo_com_indice}")
+
+            print("-" * 60)
