@@ -204,7 +204,7 @@ def criar_pedido(conn, idcli, idest, produtos, metodo_pagamento):
                         VALUES (%s, %s, %s);
                     """, (idped, nota, mensagem if mensagem else None))
                     conn.commit()
-                    print("Avaliação registrada com sucesso.")
+                    print("✅ Avaliação registrada com sucesso.")
                 except Exception as e:
                     conn.rollback()
                     print("Erro ao registrar avaliação:", e)
@@ -316,7 +316,7 @@ def fazer_pedido(conn, idcli, idest, produtos_disponiveis):
 
     idped = criar_pedido(conn, idcli, idest, carrinho, metodo)
     if idped:
-        print(f"Pedido {idped} criado com sucesso!")
+        print(f"✅ Pedido {idped} criado com sucesso!")
     else:
         print("Falha ao criar pedido.")
 
@@ -431,7 +431,7 @@ def alterar_dados_cliente(conn, idcli):
     )
 
     if sucesso:
-        print("Dados atualizados com sucesso.")
+        print("✅ Dados atualizados com sucesso.")
     else:
         print("Nenhum dado foi alterado ou ocorreu um erro.")
 
@@ -463,7 +463,7 @@ def menu_cliente(conn):
 
             idcli = criar_cliente(conn, nome, clube, cpf, endereco)
             if idcli:
-                print(f"Conta criada com sucesso! Seu ID é {idcli}")
+                print(f"✅ Conta criada com sucesso! Seu ID é {idcli}")
             else:
                 print("Falha ao criar conta.")
         elif opcao == '0':
