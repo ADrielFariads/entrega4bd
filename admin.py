@@ -8,7 +8,6 @@ def menu_administrativo(conn):
         print("1 - Menu Clientes")
         print("2 - Menu Estabelecimentos")
         print("3 - Menu Entregador")
-        print("4 - Analisando Índices")
         print("0 - Voltar")
         print("q - Sair do sistema")
         opcao = input("Escolha uma opção: ")
@@ -19,8 +18,6 @@ def menu_administrativo(conn):
             menu_estabelecimentos(conn)
         elif opcao == '3':
             menu_entregador(conn)
-        elif opcao == "4":
-            analisar_indices(conn)
         
         elif opcao == "0":
             print("Voltando ao menu principal...")
@@ -235,7 +232,6 @@ def criar_indices_otimizacao(conn):
     except Exception as e:
         print("Erro ao criar índices:", e)
 
-def analisar_indices(conn):
     consultas = [
         {
             "descricao": "Buscar cliente por CPF",
